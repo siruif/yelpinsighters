@@ -1,4 +1,5 @@
 import json
+import operator
 
 
 def business_data():
@@ -40,6 +41,35 @@ def business_data():
 		print( 'cities_represented', len(list_of_cities), list_of_cities )
 		print( 'list_of_categoreis',len(list_of_categories),list_of_categories )
 
+def business_in_city():
+	'''
+	There are 42 cities that have over 100 business. They are:
+	
+	('Sun City', 106), ('Litchfield Park', 110), ('Sun Prairie', 114), ('Anthem', 123), 
+	('Fitchburg', 123), ('Buckeye', 131), ('Maricopa', 143), ('Apache Junction', 157), 
+	('Concord', 161), ('Fountain Hills', 177), ('Casa Grande', 181), ('Pineville', 184), 
+	('Kitchener', 188), ('Laval', 196), ('Middleton', 208), ('Cave Creek', 229), 
+	('Fort Mill', 238), ('Waterloo', 262), ('Urbana', 262), ('Matthews', 346), 
+	('Queen Creek', 348), ('Avondale', 386), ('Goodyear', 459), ('Champaign', 462), 
+	('Surprise', 587), ('North Las Vegas', 819), ('Karlsruhe', 898), ('Peoria', 929), 
+	('Gilbert', 1716), ('Glendale', 1823), ('Madison', 2104), ('Chandler', 2425), 
+	('Tempe', 2773), ('Henderson', 2839), ('Mesa', 3190), ('Edinburgh', 3272), 
+	('Pittsburgh', 3337), ('Montréal', 3891), ('Scottsdale', 5139), 
+	('Charlotte', 5189), ('Phoenix', 10629), ('Las Vegas', 17423)
+	'''
+
+	with open('yelp_academic_dataset_business.json') as data_file:
+		cities = dict()
+		for line in data_file:
+			row = json.loads(line)
+
+			city = row['city']
+			if city not in cities:
+				cities[city] = 1
+			else:
+				cities[city] += 1
+		sorted_cities = sorted(cities.items(), key=operator.itemgetter(1))
+		print(sorted_cities)
 def user_data():
 	'''
 	Parse throught the user dataset of Yelp and find the summary statistics. Each row is dictionary 
@@ -77,5 +107,5 @@ def reviews_data():
 		print('No Users who reviewed', len(users))
 		print('No of Business who got reviewd', len(business))
 		print('No of reviews', reviews)	
-
+business_in_city()
 			
