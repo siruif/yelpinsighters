@@ -1,5 +1,6 @@
 # Sirui Feng
 # This file generates all pairs who have gone to same restaurant.
+# First run this file, then similar_user.py
 
 
 import json
@@ -10,7 +11,7 @@ import itertools
 review_data_path = 'test.json'	#test data
 #review_data_path = '../yelp_academic_dataset_review.json'
 #public_review_data_path = '../textinsighters/data/public_utilities.json'
-user_pairs_outfile = 'user_pairs.csv'
+user_pairs_outfile = 'user_pair.csv'
 
 
 def read_reivews():
