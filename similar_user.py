@@ -10,6 +10,12 @@ count_data_path = 'mr_output.csv'
 review_data_path = 'test.json'
 
 def user_pair_same_star_dict():
+	'''
+	pair_dict_threshold = {(user1_id,user2_id):{ 'cnt_same_busn_review': 3, 
+	business1_id: (star_ratings_user1, star_ratings_user2), 
+	business2_id: (star_ratings_user1, star_ratings_user2), 
+	business3_id: (star_ratings_user1, star_ratings_user2)}}
+	'''
 	pair_dict_zero = dict()
 	pair_dict_five = dict()
 	with open(count_data_path) as csvfile:
