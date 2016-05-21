@@ -15,10 +15,11 @@ business_ID: stars}
 '''
 import json
 import operator
+import csv
 
 business_data_filepath = '../yelp_academic_dataset_business.json'
 reviews_data_filepath = '../yelp_academic_dataset_review.json'
-
+user_data_filepath = '../yelp_academic_dataset_user.json'
 def business_data():
 	'''
 	Parse through the business dataset of Yelp and return the business names.
@@ -36,14 +37,24 @@ def business_data():
 def get_reviews():
 	'''
 	Parse through the reviews dataset of Yelp and for each business make a dict
-	like: {Business_ID: {date1: stars, date2:stars} etc}
+	like: {Business_ID: [[date1, stars], [date2,stars]] etc}, using that make a dict
+	like: {Business_ID: {window_size: [average_of_windows],window_size: [average_of_windows]}}
 	(['text', 'date', 'review_id', 'stars', 'business_id', 'votes', 'user_id', 'type']) 
 	'''
 
 	data = {}
+	rv = {}
 	print('starting')
 	#Making the data dictionary
-	with open("reviews_testdata.json") as data_file:
+	weighted_dict = {}
+	user_dict = {}
+	with open(user_data_filepath) as data_file:
+
+		for line in data_file:
+			row = json.loads(line)
+			user_dict[row['user_id']] = row['average_stars']
+	
+	with open(reviews_data_filepath) as data_file:
 
 		for line in data_file:
 			row = json.loads(line)
@@ -51,26 +62,49 @@ def get_reviews():
 			review_id = row['review_id']
 			date = row['date']
 			stars = row['stars']
-			item = [date, stars]
+			user_id = row['user_id']
+			weighted_stars = stars * user_dict[user_id]
+			item = [date, weighted_stars ]
+			
 			try:
 				data[business_id].append (item)
 			except:
 				data[business_id] = []
-				data[business_id].append (item)
+				data[business_id].append(item)
 	#For each business sorting by date first and then making windows.
-	for key in data.keys():
-		data[key].sort(key = operator.itemgetter(0))
-		reviews = data[key]
+	counter = 0
+
+	for business_id in data.keys():
+		print(data[business_id])
+		#print(data[business_id][user_id])
+		#data[business_id][user_id][1] = user_dict[user_id] * data[business_id][user_id][1] 
+		#print(data[business_id][user_id])
+		data[business_id].sort(key = operator.itemgetter(0))
+		reviews = data[business_id]
 	#Once we have sorted the stars and by date, remove the data and get only the stars
 		stars = [stars_only[1] for stars_only in reviews]
 	#Looking only at Business with more than 10 reviews 
+		rv[business_id] = {}
+		rv_inner = {}
 		if len(reviews) >= 10:
+			counter += 1
+			print (counter)
 	#Making windows of size 3, 4 and 5. Can change this later
-			for window_length in range(3,6):
-				print("window length", window_length)
+			
+			for window_length in range(3,11):
+				#print("window length", window_length, "stars", stars)
 				windows = [stars[i:i+window_length] for i in range(len(stars)-(window_length-1) ) ]
-				print (windows) 					
+				windows_avg = [sum(x)/len(x) for x in windows]
+				rv_inner[window_length] = windows_avg
+		rv[business_id] = rv_inner 
 
+	writer = csv.writer (open("windows.csv", 'w') )
+	
+	for key, value in rv.items():
+		writer.writerow([key, value])
+
+		
+	#print(rv)		
 
 
 
