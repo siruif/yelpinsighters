@@ -8,13 +8,13 @@ import csv
 import time
 import itertools
 
-review_data_path = 'test.json'	#test data
+review_data_path = 'all_review.json'	#test data
 #review_data_path = '../yelp_academic_dataset_review.json'
 #public_review_data_path = '../textinsighters/data/public_utilities.json'
 user_pairs_outfile = 'user_pair.csv'
 
 
-def read_reivews():
+def read_reviews():
 	# reviews_dict keeps track of the business and users who have gone to it
 	# key is business_id, value is a set of users who have visted
 	reviews_dict = dict()
@@ -28,8 +28,8 @@ def read_reivews():
 			else:
 				reviews_dict[business] = set()
 				reviews_dict[business].add(user)
-	print("There are ", len(reviews_dict), "unique business in review dataset")
-	print(reviews_dict)
+	#print("There are ", len(reviews_dict), "unique business in review dataset")
+	#print(reviews_dict)
 	return reviews_dict
 
 def generate_user_pair(reviews_dict):
@@ -42,16 +42,14 @@ def generate_user_pair(reviews_dict):
 		for business in reviews_dict:
 			users = reviews_dict[business]
 			#itertools generates a list of tuples
-			user_pairs = list(itertools.combinations(users, 2))
-			for pair in user_pairs:
-				w.writerow([pair,business])
+			for pair in itertools.combinations(users, 2):
+			    w.writerow([pair,business])
 
 def go():
-	reviews_dict = read_reivews()
+	reviews_dict = read_reviews()
 	start_time = time.time()
 	generate_user_pair(reviews_dict)
 	end_time = time.time()
-	print("generate_user_pair takes", end_time-start_time,"seconds")
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+	#print("generate_user_pair takes", end_time-start_time,"seconds")
 
 go()
