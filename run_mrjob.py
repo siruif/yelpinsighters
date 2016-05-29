@@ -1,6 +1,6 @@
 # Author: Sirui Feng
-# This file runs mr_upair_count_b.py and output the mr result to a csv.
-
+# This file calls mr_upair_count_b.py and output the mr result to a csv.
+# Run this file by python3 run_mrjob.py input_file(user_pair.csv)
 
 from mr_upair_count_b import MRTotalBusiness
 import sys

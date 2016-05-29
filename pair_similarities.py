@@ -118,6 +118,6 @@ def generate_similar_pairs(dictname, outfilename, pairname, similarity_id):
 
 
 if __name__ == '__main__':
-	cat_count_dict, df, cat_busn_dict = busn_category_pair("yelp_academic_dataset_business.json")
+	cat_count_dict, df, cat_busn_dict = busn_category_pair("../yelp_academic_dataset_business.json")
 	generate_similar_pairs(cat_busn_dict, 'busn_cat_pairs.csv', "business_pairs", "category_shared")
 

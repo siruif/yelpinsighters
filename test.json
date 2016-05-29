@@ -1,10 +1,10 @@
-{"user_id": "1", "stars": 4, "business_id": "a"}
+{"user_id": "1", "stars": 5, "business_id": "a"}
 {"user_id": "4", "stars": 5, "business_id": "c"}
 {"user_id": "3", "stars": 5, "business_id": "a"}
 {"user_id": "1", "stars": 5, "business_id": "c"}
-{"user_id": "3", "stars": 3, "business_id": "b"}
-{"user_id": "2", "stars": 1, "business_id": "b"}
-{"user_id": "3", "stars": 4, "business_id": "c"}
+{"user_id": "3", "stars": 5, "business_id": "b"}
+{"user_id": "2", "stars": 5, "business_id": "b"}
+{"user_id": "3", "stars": 5, "business_id": "c"}
 {"user_id": "1", "stars": 5, "business_id": "d"}
 {"user_id": "2", "stars": 5, "business_id": "a"}
-{"user_id": "1", "stars": 3, "business_id": "b"}
+{"user_id": "1", "stars": 4.5, "business_id": "b"}

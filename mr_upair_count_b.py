@@ -1,5 +1,8 @@
 # Author: Sirui Feng
 # This file counts how many same business has a pair gone to by using MR.
+# Performs MapReduce on user_pair.csv
+# Please run through run_mrjob.py
+# Please do not call this file directly if you want the results output to a csv.
 
 from mrjob.job import MRJob
 import re
