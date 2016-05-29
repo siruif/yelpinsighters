@@ -8,9 +8,9 @@ import csv
 import json
 import time
 
-#review_data_path = '../yelp_academic_dataset_review.json'
+review_data_path = '../yelp_academic_dataset_review.json'
 count_data_path = 'mr_output.csv'
-review_data_path = 'test.json'
+#review_data_path = 'test.json'
 
 
 def u2_helper(u2, business):
