@@ -11,18 +11,47 @@ import time
 review_data_path = '../yelp_academic_dataset_review.json'
 count_data_path = 'mr_output.csv'
 #review_data_path = 'test.json'
+rate_output_path = 'similar_rate_results.csv'
+gone_output_path = 'gone_same_results.csv'
 
+def read_json_to_dict(review_data_path):
+	'''
+	Generates review_master_dict that stores information of review dataset.
+	Reads in the json file and stores it as a dictionary as the following format--
+	review_master_dict={review_id1:{'user_id':'sirui', 'stars' = 4, 'business_id':'a10'}}
 
-def u2_helper(u2, business):
+	'''
+	review_master_dict = dict()
 	with open(review_data_path) as review_data:
 		for line in review_data:
 			row = json.loads(line)
-			user = row['user_id']
-			b = row['business_id']
-			if (user == u2) and (b == business):
-				return row['stars']
+			review_id = row['review_id']
+			review_master_dict[review_id] = dict()
+			review_master_dict[review_id]['user_id'] = row['user_id']
+			review_master_dict[review_id]['stars'] = int(row['stars'])
+			review_master_dict[review_id]['business_id'] = row['business_id']
+	return review_master_dict
 
-def user_pair_helper(u1,u2, cnt_same_busn_gone, threshold_stars):
+def u2_helper(u2, business, review_master_dict):
+	'''
+	Returns the stars corresponding with user_id: u2 and business_id: business
+	'''
+	for review in review_master_dict:
+		user = review_master_dict[review]['user_id']
+		b = review_master_dict[review]['business_id']
+		if (user == u2) and (b == business):
+			stars = review_master_dict[review]['stars']
+			return stars
+
+	# with open(review_data_path) as review_data:
+	# 	for line in review_data:
+	# 		row = json.loads(line)
+	# 		user = row['user_id']
+	# 		b = row['business_id']
+	# 		if (user == u2) and (b == business):
+	# 			return row['stars']
+
+def user_pair_helper(u1, u2, cnt_same_busn_gone, threshold_stars, review_master_dict):
 	'''
 	Generates for each user pair u1 and u2: { 'cnt_similar_busn_rate': 6,
 	'cnt_same_busn_gone': 10, 
@@ -33,25 +62,36 @@ def user_pair_helper(u1,u2, cnt_same_busn_gone, threshold_stars):
 	business10_id: (star_ratings_user1, star_ratings_user2)}
 	'''
 	rv = dict()
-	business_set = set()
 	rv['cnt_same_busn_gone'] = cnt_same_busn_gone
 	rv['cnt_similar_busn_rate'] = 0
-	with open(review_data_path) as review_data:
-		for line1 in review_data:
-			row1 = json.loads(line1)
-			user = row1['user_id']
-			if user == u1:
-				business = row1['business_id']
-				if business not in business_set:
-					business_set.add(business)
-					star1 = row1['stars']
-					star2 = u2_helper(u2, business)
-					if star2 != None and abs(star1-star2) <= threshold_stars:
-						rv['cnt_similar_busn_rate'] += 1
+	business_set = set()
+	for review in review_master_dict:
+		user = review_master_dict[review]['user_id']
+		if user == u1:
+			business = review_master_dict[review]['business_id']
+			if business not in business_set:
+				business_set.add(business)
+				star1 = review_master_dict[review]['stars']
+				star2 = u2_helper(u2, business, review_master_dict)
+				if star2!=None and abs(star1-star2) <= threshold_stars:
+					rv['cnt_similar_busn_rate'] += 1
+
+	# with open(review_data_path) as review_data:
+	# 	for line1 in review_data:
+	# 		row1 = json.loads(line1)
+	# 		user = row1['user_id']
+	# 		if user == u1:
+	# 			business = row1['business_id']
+	# 			if business not in business_set:
+	# 				business_set.add(business)
+	# 				star1 = row1['stars']
+	# 				star2 = u2_helper(u2, business)
+	# 				if star2 != None and abs(star1-star2) <= threshold_stars:
+	# 					rv['cnt_similar_busn_rate'] += 1
 
 	return rv
 
-def gen_similar_taste_dict(threshold_stars):
+def gen_similar_taste_dict(threshold_stars, review_master_dict):
 	'''
 	Generates a dictionary -- similar_taste_dict
 
@@ -81,7 +121,7 @@ def gen_similar_taste_dict(threshold_stars):
 			u1 = user_pair[0][2:-1]	#slice beacuase of the parantheses
 			u2 = user_pair[1][2:-2]	#slice beacuase of the parantheses
 
-			similar_taste_dict[(u1,u2)] = user_pair_helper(u1,u2, cnt_same_busn_gone, threshold_stars)
+			similar_taste_dict[(u1,u2)] = user_pair_helper(u1, u2, cnt_same_busn_gone, threshold_stars, review_master_dict)
 
 	return similar_taste_dict
 	
@@ -91,7 +131,7 @@ def calculate_proportion(similar_taste_dict, given_same_num_busn, num_busn):
 	pairs who rated given_same_num_busn similarly, the proportion of them
 	rated num_busn similarly
 	'''
-	assert given_same_num_busn<=num_busn
+	assert given_same_num_busn <= num_busn
 
 	d = 0
 	n = 0
@@ -104,7 +144,52 @@ def calculate_proportion(similar_taste_dict, given_same_num_busn, num_busn):
 
 	return n/d
 
+def write_dict_to_csv(dictionary, fieldnames, output_path):
+	'''
+	Writes a dictionary's fieldnames into a csv file by using DictWriter of csv writer.
+
+	https://docs.python.org/3/library/csv.html
+	'''
+	with open(output_path, 'w') as outfile:
+		writer = csv.DictWriter(outfile, fieldnames = fieldnames)
+		
+		writer.writeheader()
+		for user_pair in dictionary:
+			row = dict()
+			row['user_pair'] = user_pair
+			for field in fieldnames:
+				if field != 'user_pair':
+					row[field] = dictionary[user_pair][field]
+			writer.writerow(row)
+
+def write_results(similar_taste_dict):
+	write_dict_to_csv(similar_taste_dict, ['user_pair', 'cnt_similar_busn_rate'], rate_output_path)
+	write_dict_to_csv(similar_taste_dict, ['user_pair', 'cnt_same_busn_gone'], gone_output_path)
+
 if __name__ == '__main__':
-	similar_taste_dict = gen_similar_taste_dict(0.5)
-	proportion = calculate_proportion(similar_taste_dict, 1, 3)
-	print(proportion)
+	start_time = time.time()
+	review_master_dict = read_json_to_dict(review_data_path)
+	end_time = time.time()
+	print("Converting from json to dictionary takes", end_time-start_time, "seconds")
+
+	threshold_stars = 0.5
+
+	start_time = time.time()
+	similar_taste_dict = gen_similar_taste_dict(threshold_stars, review_master_dict)
+	end_time = time.time()
+	print("Generating similarity dictionary takes", end_time-start_time, "seconds")
+
+	print("Writing results to csv files...")
+	write_results(similar_taste_dict)
+
+	given_same_num_busn = 2
+	num_busn = 4
+
+	proportion = calculate_proportion(similar_taste_dict, given_same_num_busn, num_busn)
+	print("The probability of given user pair has rated", given_same_num_busn, \
+		"businesses whithin a threshold of", threshold_stars, "the probability that they rate", num_busn, \
+		'businesses similarly is', proportion)
+	
+
+	print("~"*70)
+	print("High Five!")
