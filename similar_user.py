@@ -13,6 +13,7 @@ count_data_path = 'mr_user_pair.csv'
 #review_data_path = 'test.json'
 rate_output_path = 'similar_rate_results.csv'
 gone_output_path = 'gone_same_results.csv'
+accuracy_output_path = 'accuracy_results.csv'
 
 def read_json_to_dict(review_data_path):
 	'''
@@ -173,6 +174,7 @@ def write_results(similar_taste_dict):
 	write_dict_to_csv(similar_taste_dict, ['user_pair', 'cnt_same_busn_gone'], gone_output_path)
 
 if __name__ == '__main__':
+	program_start_time = time.tine()
 	start_time = time.time()
 	review_master_dict = read_json_to_dict(review_data_path)
 	end_time = time.time()
@@ -197,13 +199,32 @@ if __name__ == '__main__':
 
 	print("Doing calculations...")
 
-	for given_same_num_busn in given_same_num_busn_list:
-		for num_busn in range(given_same_num_busn+1, 10):
-			proportion = calculate_proportion(similar_taste_dict, given_same_num_busn, num_busn)
-			
-			print("The probability of given user pair has rated", given_same_num_busn, \
-			"businesses whithin a threshold of", threshold_stars, "the probability that they rate", num_busn, \
-			'businesses similarly is', proportion)
+	fieldnames = ['given_same_num_busn', 'num_busn', 'proportion']
+
+	with open(accuracy_output_path, 'w') as f:
+		writer = csv.DictWriter(f, fieldnames = fieldnames)
+		writer.writeheader()
+		row = {}
+
+		for given_same_num_busn in given_same_num_busn_list:
+			for num_busn in range(given_same_num_busn+1, 10):
+				proportion = calculate_proportion(similar_taste_dict, given_same_num_busn, num_busn)
+
+				row['given_same_num_busn'] = given_same_num_busn
+				row['num_busn'] = num_busn
+				row['proportion'] = proportion
+
+				print("The probability of given user pair has rated", given_same_num_busn, \
+				"businesses whithin a threshold of", threshold_stars, "the probability that they rate", num_busn, \
+				'businesses similarly is', proportion)
+
+				print("Writing this result to", accuracy_output_path,"...")
+				writer.writerow(row)
+
+	program_end_time = time.time()
+	print("The entire program takes", (program_end_time-program_start_time)/60, 'minutes')
+				
+				
 	
 
 	print("~"*70)
