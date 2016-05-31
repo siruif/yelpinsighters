@@ -74,6 +74,7 @@ def user_pair_helper(u1, u2, cnt_same_busn_gone, threshold_stars, review_master_
 			stars2 = review_master_dict[u2][b]['stars']
 			if abs(stars1-stars2) <= threshold_stars:
 				rv['cnt_similar_busn_rate'] += 1
+
 		
 
 	# with open(review_data_path) as review_data:
@@ -112,6 +113,7 @@ def gen_similar_taste_dict(threshold_stars, review_master_dict):
 	with open(count_data_path) as csvfile:
 		r = csv.reader(csvfile, delimiter = ',')
 		headers = next(r, None)	#skip the first row of header
+		i=1
 		
 		for row in r:
 			cnt_same_busn_gone = int(row[1])
@@ -124,6 +126,8 @@ def gen_similar_taste_dict(threshold_stars, review_master_dict):
 			u2 = user_pair[1][3:-2]	#slice beacuase of the parantheses
 
 			similar_taste_dict[(u1,u2)] = user_pair_helper(u1, u2, cnt_same_busn_gone, threshold_stars, review_master_dict)
+			print(i, 'out of 15924491 entries done...')
+			i+=1
 
 	return similar_taste_dict
 	
@@ -183,16 +187,23 @@ if __name__ == '__main__':
 	end_time = time.time()
 	print("Generating similarity dictionary takes", end_time-start_time, "seconds")
 
+	print()
+
 	print("Writing results to csv files...")
 	write_results(similar_taste_dict)
+	print("Done writing to csvs")
 
-	given_same_num_busn = 2
-	num_busn = 3
+	given_same_num_busn_list = [2,3,4,5,6,7,8,9]
 
-	proportion = calculate_proportion(similar_taste_dict, given_same_num_busn, num_busn)
-	print("The probability of given user pair has rated", given_same_num_busn, \
-	"businesses whithin a threshold of", threshold_stars, "the probability that they rate", num_busn, \
-	'businesses similarly is', proportion)
+	print("Doing calculations...")
+
+	for given_same_num_busn in given_same_num_busn_list:
+		for num_busn in range(given_same_num_busn+1, 10):
+			proportion = calculate_proportion(similar_taste_dict, given_same_num_busn, num_busn)
+			
+			print("The probability of given user pair has rated", given_same_num_busn, \
+			"businesses whithin a threshold of", threshold_stars, "the probability that they rate", num_busn, \
+			'businesses similarly is', proportion)
 	
 
 	print("~"*70)
