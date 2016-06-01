@@ -9,7 +9,7 @@ import json
 import time
 
 review_data_path = '../yelp_academic_dataset_review.json'
-count_data_path = 'mr_user_pair.csv'
+count_data_path = '../mr_user_pair.csv'
 rate_output_path = 'output/similar_rate_results.csv'
 gone_output_path = 'output/gone_same_results.csv'
 overall_accuracy_output_path = 'output/overall_accuracy_results.txt'
@@ -110,7 +110,8 @@ def calculate_proportion(similar_taste_dict, given_same_num_busn, num_busn):
 	n = 0
 
 	for pair in similar_taste_dict:
-		if similar_taste_dict[pair]['cnt_similar_busn_rate'] >= given_same_num_busn:
+		if similar_taste_dict[pair]['cnt_same_busn_gone']>given_same_num_busn and \
+		similar_taste_dict[pair]['cnt_similar_busn_rate'] >= given_same_num_busn:
 			d += 1
 			if similar_taste_dict[pair]['cnt_similar_busn_rate'] >= num_busn:
 				n += 1
@@ -200,11 +201,10 @@ if __name__ == '__main__':
 	print("Generating similarity dictionary takes", end_time-start_time, "seconds")
 	print()
 
-	print("Writing results to csv files...")
-	write_results(similar_taste_dict)
-	print("Done writing to csvs")
-	print()
-
+	# print("Writing results to csv files...")
+	# write_results(similar_taste_dict)
+	# print("Done writing to csvs")
+	# print()
 
 	start_time = time.time()
 	print("Calculating accuracy with a baseline...")
