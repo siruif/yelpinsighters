@@ -1,0 +1,1 @@
+The average accuracy for the entire dataset is: 0.38
