@@ -10,10 +10,11 @@ import time
 
 review_data_path = '../yelp_academic_dataset_review.json'
 count_data_path = 'mr_user_pair.csv'
-#review_data_path = 'test.json'
-rate_output_path = 'similar_rate_results.csv'
-gone_output_path = 'gone_same_results.csv'
-accuracy_output_path = 'accuracy_results.csv'
+rate_output_path = 'output/similar_rate_results.csv'
+gone_output_path = 'output/gone_same_results.csv'
+overall_accuracy_output_path = 'output/overall_accuracy_results.txt'
+proportion_output_path = 'output/proportion_results.csv'
+accuracy_with_baseline_output_path = 'output/accuracy_with_baseline.csv'
 
 def read_json_to_dict(review_data_path):
 	'''
@@ -39,25 +40,6 @@ def read_json_to_dict(review_data_path):
 
 	return review_master_dict
 
-# def u2_helper(u2, business, review_master_dict):
-# 	'''
-# 	Returns the stars corresponding with user_id: u2 and business_id: business
-# 	'''
-# 	for review in review_master_dict:
-# 		user = review_master_dict[review]['user_id']
-# 		b = review_master_dict[review]['business_id']
-# 		if (user == u2) and (b == business):
-# 			stars = review_master_dict[review]['stars']
-# 			return stars
-
-	# with open(review_data_path) as review_data:
-	# 	for line in review_data:
-	# 		row = json.loads(line)
-	# 		user = row['user_id']
-	# 		b = row['business_id']
-	# 		if (user == u2) and (b == business):
-	# 			return row['stars']
-
 def user_pair_helper(u1, u2, cnt_same_busn_gone, threshold_stars, review_master_dict):
 	'''
 	Generates for each user pair u1 and u2: { 'cnt_similar_busn_rate': 6,
@@ -75,21 +57,9 @@ def user_pair_helper(u1, u2, cnt_same_busn_gone, threshold_stars, review_master_
 			stars2 = review_master_dict[u2][b]['stars']
 			if abs(stars1-stars2) <= threshold_stars:
 				rv['cnt_similar_busn_rate'] += 1
+	
 
-		
-
-	# with open(review_data_path) as review_data:
-	# 	for line1 in review_data:
-	# 		row1 = json.loads(line1)
-	# 		user = row1['user_id']
-	# 		if user == u1:
-	# 			business = row1['business_id']
-	# 			if business not in business_set:
-	# 				business_set.add(business)
-	# 				star1 = row1['stars']
-	# 				star2 = u2_helper(u2, business)
-	# 				if star2 != None and abs(star1-star2) <= threshold_stars:
-	# 					rv['cnt_similar_busn_rate'] += 1
+	rv['accuracy'] = (rv['cnt_similar_busn_rate'])/(cnt_same_busn_gone)
 
 	return rv
 
@@ -99,11 +69,7 @@ def gen_similar_taste_dict(threshold_stars, review_master_dict):
 
 	similar_taste_dict = {(user1_id,user2_id):{ 'cnt_similar_busn_rate': 6,
 	'cnt_same_busn_gone': 10, 
-	business1_id: (star_ratings_user1, star_ratings_user2), 
-	business2_id: (star_ratings_user1, star_ratings_user2), 
-	business3_id: (star_ratings_user1, star_ratings_user2) 
-	...
-	business10_id: (star_ratings_user1, star_ratings_user2)
+	'accuracy' = 0.6
 	...}
 
 	'''
@@ -173,35 +139,93 @@ def write_results(similar_taste_dict):
 	write_dict_to_csv(similar_taste_dict, ['user_pair', 'cnt_similar_busn_rate'], rate_output_path)
 	write_dict_to_csv(similar_taste_dict, ['user_pair', 'cnt_same_busn_gone'], gone_output_path)
 
+def calculate_and_output_overall_accuracy(similar_taste_dict):
+	with open(overall_accuracy_output_path, 'w') as f:
+		accuracy_list=list()
+		accuracy_sum = 0
+
+		for pair in similar_taste_dict:
+			accuracy = similar_taste_dict[pair]['accuracy']
+			accuracy_list.append(accuracy)
+
+		for a in accuracy_list:
+			accuracy_sum += a
+
+		overall_accuracy = accuracy_sum/len(accuracy_list)
+
+		overall_accuracy =  "The average accuracy for the entire dataset is: " + str(round(overall_accuracy,2))
+
+		print(overall_accuracy, file = f)
+
+		return overall_accuracy
+
+def calculate_and_output_accuracy_with_baseline(similar_taste_dict, baseline_list):
+	with open(accuracy_with_baseline_output_path, 'w') as outfile:
+		fieldnames = ['baseline', 'accuracy']
+		writer = csv.DictWriter(outfile, fieldnames = fieldnames)
+		writer.writeheader()
+		for baseline in baseline_list:
+			print("Calculating accuracy with a baseline of:", baseline)
+			row = {}
+			accuracy_list = list()
+			for user_pair in similar_taste_dict:
+				cnt_similar_busn_rate = similar_taste_dict[user_pair]['cnt_similar_busn_rate']
+				cnt_same_busn_gone = similar_taste_dict[user_pair]['cnt_same_busn_gone']
+				if cnt_similar_busn_rate > baseline and cnt_same_busn_gone > baseline:
+					a = (cnt_similar_busn_rate - baseline)/(cnt_same_busn_gone - baseline)
+					accuracy_list.append(a)
+
+			accuracy_sum=0
+			for accuracy in accuracy_list:
+				accuracy_sum += accuracy
+
+			row['baseline'] = baseline
+			row['accuracy'] = accuracy_sum/len(accuracy_list)
+
+			writer.writerow(row)
+
 if __name__ == '__main__':
-	program_start_time = time.tine()
+	program_start_time = time.time()
+
 	start_time = time.time()
 	review_master_dict = read_json_to_dict(review_data_path)
 	end_time = time.time()
 	print("Converting from json to dictionary takes", end_time-start_time, "seconds")
 
-	threshold_stars = 0.5
-
 	print("Generating similar_taste_dict...")
-
 	start_time = time.time()
+	threshold_stars = 0
 	similar_taste_dict = gen_similar_taste_dict(threshold_stars, review_master_dict)
 	end_time = time.time()
 	print("Generating similarity dictionary takes", end_time-start_time, "seconds")
-
 	print()
 
 	print("Writing results to csv files...")
 	write_results(similar_taste_dict)
 	print("Done writing to csvs")
+	print()
 
+
+	start_time = time.time()
+	print("Calculating accuracy with a baseline...")
+	baseline_list = [2, 3, 4, 5, 6, 7]
+	calculate_and_output_accuracy_with_baseline(similar_taste_dict, baseline_list)
+	end_time = time.time()
+	print("Calculating accuracy with a baseline takes", end_time-start_time, "seconds")
+	print()
+
+	print("Calculating overall accuracy...")
+	start_time = time.time()
+	overall_accuracy = calculate_and_output_overall_accuracy(similar_taste_dict)
+	end_time = time.time()
+	print("Calculating overall accuracy takes", end_time-start_time, 'seconds')
+	print()
+
+	print("Doing calculations regarding proportions...")
+	start_time=time.time()
 	given_same_num_busn_list = [2,3,4,5,6,7,8,9]
-
-	print("Doing calculations...")
-
 	fieldnames = ['given_same_num_busn', 'num_busn', 'proportion']
-
-	with open(accuracy_output_path, 'w') as f:
+	with open(proportion_output_path, 'w') as f:
 		writer = csv.DictWriter(f, fieldnames = fieldnames)
 		writer.writeheader()
 		row = {}
@@ -209,23 +233,21 @@ if __name__ == '__main__':
 		for given_same_num_busn in given_same_num_busn_list:
 			for num_busn in range(given_same_num_busn+1, 10):
 				proportion = calculate_proportion(similar_taste_dict, given_same_num_busn, num_busn)
-
 				row['given_same_num_busn'] = given_same_num_busn
 				row['num_busn'] = num_busn
 				row['proportion'] = proportion
-
 				print("The probability of given user pair has rated", given_same_num_busn, \
 				"businesses whithin a threshold of", threshold_stars, "the probability that they rate", num_busn, \
 				'businesses similarly is', proportion)
-
-				print("Writing this result to", accuracy_output_path,"...")
+				print("Writing this result to", proportion_output_path,"...")
+				print()
 				writer.writerow(row)
+	end_time = time.time()
+	print("Calculating proportions takes", end_time-start_time, 'seconds')
+
 
 	program_end_time = time.time()
 	print("The entire program takes", (program_end_time-program_start_time)/60, 'minutes')
-				
-				
-	
 
 	print("~"*70)
 	print("High Five!")
