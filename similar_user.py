@@ -110,11 +110,11 @@ def calculate_proportion(similar_taste_dict, given_same_num_busn, num_busn):
 	n = 0
 
 	for pair in similar_taste_dict:
-		if similar_taste_dict[pair]['cnt_same_busn_gone']>given_same_num_busn and \
-		similar_taste_dict[pair]['cnt_similar_busn_rate'] >= given_same_num_busn:
-			d += 1
-			if similar_taste_dict[pair]['cnt_similar_busn_rate'] >= num_busn:
-				n += 1
+		if similar_taste_dict[pair]['cnt_same_busn_gone'] >= num_busn:
+			if similar_taste_dict[pair]['cnt_similar_busn_rate'] >= given_same_num_busn:
+				d += 1
+				if similar_taste_dict[pair]['cnt_similar_busn_rate'] >= num_busn:
+					n += 1
 
 	return n/d
 
