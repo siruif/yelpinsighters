@@ -7,6 +7,7 @@
 import csv
 import json
 import time
+import itertools
 
 review_data_path = '../yelp_academic_dataset_review.json'
 count_data_path = '../mr_user_pair.csv'
@@ -40,30 +41,52 @@ def read_json_to_dict(review_data_path):
 
 	return review_master_dict
 
-def user_pair_helper(u1, u2, cnt_same_busn_gone, threshold_stars, review_master_dict):
+def user_pair_helper(u1, u2, cnt_same_busn_gone, threshold_stars, review_master_dict, check_category):
 	'''
 	Generates for each user pair u1 and u2: { 'cnt_similar_busn_rate': 6,
 	'cnt_same_busn_gone': 10...}
 	'''
 	rv = dict()
-	rv['cnt_same_busn_gone'] = cnt_same_busn_gone
-	rv['cnt_similar_busn_rate'] = 0
+	
+
+	busn_list = list()
 	business_set = set()
 	for business in review_master_dict[u1]:
 		business_set.add(business)
 	for b in business_set:
 		if b in review_master_dict[u2]:
+			busn_list.append(b)
+
+	busn_list = sorted(busn_list)
+
+	if check_category:
+		rv['busn_list'] = busn_list
+		
+		similar_rate_busn = list()
+		for busn in busn_list:
+			stars1 = review_master_dict[u1][busn]['stars']
+			stars2 = review_master_dict[u2][busn]['stars']
+			
+			if abs(stars1-stars2) <= threshold_stars:
+				similar_rate_busn.append(busn)
+		rv['similar_rate_busn_pair'] = list(itertools.combinations(similar_rate_busn, 2))
+
+	else:
+		rv['cnt_similar_busn_rate'] = 0
+		rv['cnt_same_busn_gone'] = cnt_same_busn_gone
+
+
+		for busn in busn_list:
 			stars1 = review_master_dict[u1][b]['stars']
 			stars2 = review_master_dict[u2][b]['stars']
+			
 			if abs(stars1-stars2) <= threshold_stars:
 				rv['cnt_similar_busn_rate'] += 1
-	
-
-	rv['accuracy'] = (rv['cnt_similar_busn_rate'])/(cnt_same_busn_gone)
+		rv['accuracy'] = (rv['cnt_similar_busn_rate'])/(rv['cnt_same_busn_gone'])
 
 	return rv
 
-def gen_similar_taste_dict(threshold_stars, review_master_dict):
+def gen_similar_taste_dict(threshold_stars, review_master_dict, check_category):
 	'''
 	Generates a dictionary -- similar_taste_dict
 
@@ -92,7 +115,7 @@ def gen_similar_taste_dict(threshold_stars, review_master_dict):
 
 			u2 = user_pair[1][3:-2]	#slice beacuase of the parantheses
 
-			similar_taste_dict[(u1,u2)] = user_pair_helper(u1, u2, cnt_same_busn_gone, threshold_stars, review_master_dict)
+			similar_taste_dict[(u1,u2)] = user_pair_helper(u1, u2, cnt_same_busn_gone, threshold_stars, review_master_dict, check_category)
 			print(i, 'out of 15924491 entries done...')
 			i+=1
 
@@ -196,7 +219,7 @@ if __name__ == '__main__':
 	print("Generating similar_taste_dict...")
 	start_time = time.time()
 	threshold_stars = 0
-	similar_taste_dict = gen_similar_taste_dict(threshold_stars, review_master_dict)
+	similar_taste_dict = gen_similar_taste_dict(threshold_stars, review_master_dict, check_category=True)
 	end_time = time.time()
 	print("Generating similarity dictionary takes", end_time-start_time, "seconds")
 	print()
