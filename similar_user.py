@@ -120,6 +120,12 @@ def gen_similar_taste_dict(threshold_stars, review_master_dict, check_category):
 			i+=1
 
 	return similar_taste_dict
+
+def similar_taste_dict_with_category():
+	threshold_stars=0.5
+	review_master_dict = read_json_to_dict(review_data_path)
+	rv = gen_similar_taste_dict(threshold_stars, review_master_dict, check_category=True)
+	return rv
 	
 def calculate_proportion(similar_taste_dict, given_same_num_busn, num_busn):
 	'''
@@ -219,7 +225,7 @@ if __name__ == '__main__':
 	print("Generating similar_taste_dict...")
 	start_time = time.time()
 	threshold_stars = 0
-	similar_taste_dict = gen_similar_taste_dict(threshold_stars, review_master_dict, check_category=True)
+	similar_taste_dict = gen_similar_taste_dict(threshold_stars, review_master_dict, check_category=False)
 	end_time = time.time()
 	print("Generating similarity dictionary takes", end_time-start_time, "seconds")
 	print()
