@@ -4,23 +4,11 @@
 import json
 import pandas as pd 
 import csv
-#import time
+import time
 import itertools
-#from user_pair import *
 
-#user_pairs_outfile = 'busn_cat_pairs.csv'
-
-
-#from scripts.readto_pd_df import *
 
 def read(filename, file_format, json_obj_top_level_id = None):
-	'''
-	inputs:
-		filename = name of ifle
-		file_format = type of format, currently can be 'csv' or 'json objects' 
-	outputs:
-		dataset in pandas dataframe format
-	'''
 
 	df = []
 	if file_format == 'csv':
@@ -42,7 +30,9 @@ def read(filename, file_format, json_obj_top_level_id = None):
 
 	return df
 
+
 def busn_category_pair(filename):
+
 	df = read(filename, "json objects", "business_id")
 
 	cat_count_dict = {}
@@ -54,16 +44,14 @@ def busn_category_pair(filename):
 	cat_busn_dict = {}
 	for key, val in cat_count_dict.items():
 		if val > 2:
-			#print(key, val)
 			for i in range(len(df)):
 				if key in df['categories'][i]:
-					#print(key, df['categories'][i])
 					cat_busn_dict[key] = cat_busn_dict.setdefault(key, set())
 					cat_busn_dict[key].add(df['business_id'][i])
 	
-	#print(cat_busn_dict)
-
+	
 	return cat_count_dict, df, cat_busn_dict
+
 
 def generate_similar_pairs(dictname, outfilename, pairname, similarity_id):
 	# business_dict records for each business, all the pairs who have gone to it
@@ -73,14 +61,22 @@ def generate_similar_pairs(dictname, outfilename, pairname, similarity_id):
 		w.writerow([pairname, similarity_id])
 
 		for val in dictname:
-			in_set = dictname[val]
+			in_set = sorted(dictname[val])
 			#itertools generates a list of tuples
-			pairs = list(itertools.combinations(in_set, 2))
-			for pair in pairs:
+			for pair in itertools.combinations(in_set, 2):
 				w.writerow([pair, val])
 
 
 if __name__ == '__main__':
-	cat_count_dict, df, cat_busn_dict = busn_category_pair("yelp_academic_dataset_business.json")
-	generate_similar_pairs(cat_busn_dict, 'busn_cat_pairs.csv', "business_pairs", "category_shared")
+	print("initializing...")
+	start_time = time.time()
+	cat_count_dict, df, cat_busn_dict = busn_category_pair("datafiles/yelp_academic_dataset_business.json")
+	end_time = time.time()
+	secs = end_time - start_time
+	print("Finished busn_category_pair in {} seconds, {} minutes, {} hours".format(int(secs), int(secs/60), int(secs/3600)))
 
+	start_time = time.time()
+	generate_similar_pairs(cat_busn_dict, 'busn_cat_pairs.csv', "business_pairs", "category_shared")
+	end_time = time.time()
+	secs = end_time - start_time
+	print("Finished generate_similar_pairs in {} seconds, {} minutes, {} hours".format(int(secs), int(secs/60), int(secs/3600)))
