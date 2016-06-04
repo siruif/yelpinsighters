@@ -121,7 +121,7 @@ def gen_similar_taste_dict(threshold_stars, review_master_dict, check_category):
 
 	return similar_taste_dict
 
-def similar_taste_dict_with_category():
+def similar_taste_dict_with_category(review_data_path):
 	threshold_stars=0.5
 	review_master_dict = read_json_to_dict(review_data_path)
 	rv = gen_similar_taste_dict(threshold_stars, review_master_dict, check_category=True)
