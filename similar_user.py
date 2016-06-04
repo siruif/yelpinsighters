@@ -172,7 +172,7 @@ def calculate_and_output_accuracy_with_baseline(similar_taste_dict, baseline_lis
 			for user_pair in similar_taste_dict:
 				cnt_similar_busn_rate = similar_taste_dict[user_pair]['cnt_similar_busn_rate']
 				cnt_same_busn_gone = similar_taste_dict[user_pair]['cnt_same_busn_gone']
-				if cnt_similar_busn_rate > baseline and cnt_same_busn_gone > baseline:
+				if cnt_similar_busn_rate >= baseline and cnt_same_busn_gone > baseline:
 					a = (cnt_similar_busn_rate - baseline)/(cnt_same_busn_gone - baseline)
 					accuracy_list.append(a)
 
