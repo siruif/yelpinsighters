@@ -9,4 +9,4 @@
 * Turab Hassan
 
 
-Using a subset of data from the Yelp Dataset Challenge, big data approaches including MapReduce, AWS, Itertools etc, we studied whether whether recommendation algorithms based on similar users were accurate, and whether the user experience at a given business changed over time.
+Using a subset of data from the Yelp Dataset Challenge, big data approaches including MapReduce, AWS, Itertools etc, we studied whether recommendation algorithms based on similar users were accurate, and whether the user experience at a given business changed over time.
