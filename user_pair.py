@@ -15,6 +15,9 @@ user_pairs_outfile = 'user_pair.csv'
 
 
 def read_reviews():
+	'''
+	Reads in the yelp reviews json file and generates dictionary.
+	'''
 	# reviews_dict keeps track of the business and users who have gone to it
 	# key is business_id, value is a set of users who have visted
 	reviews_dict = dict()
@@ -33,6 +36,9 @@ def read_reviews():
 	return reviews_dict
 
 def generate_user_pair(reviews_dict):
+	'''
+	Generates user pair and outputs to a csv file.
+	'''
 	# business_dict records for each business, all the pairs who have gone to it
 	# key is business_id, value is a list of tuples in the form of (user1,user2)
 	with open(user_pairs_outfile, 'w') as outfile:

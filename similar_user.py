@@ -122,6 +122,9 @@ def gen_similar_taste_dict(threshold_stars, review_master_dict, check_category):
 	return similar_taste_dict
 
 def similar_taste_dict_with_category(review_data_path):
+	'''
+	Generates similar_taste_dict with a threshold of 0.5, i.e., no difference.
+	'''
 	threshold_stars=0.5
 	review_master_dict = read_json_to_dict(review_data_path)
 	rv = gen_similar_taste_dict(threshold_stars, review_master_dict, check_category=True)
@@ -170,6 +173,9 @@ def write_results(similar_taste_dict):
 	write_dict_to_csv(similar_taste_dict, ['user_pair', 'cnt_same_busn_gone'], gone_output_path)
 
 def calculate_and_output_overall_accuracy(similar_taste_dict):
+	'''
+	Calculates and outputs the overall accuracy.
+	'''
 	with open(overall_accuracy_output_path, 'w') as f:
 		accuracy_list=list()
 		accuracy_sum = 0
@@ -190,6 +196,9 @@ def calculate_and_output_overall_accuracy(similar_taste_dict):
 		return overall_accuracy
 
 def calculate_and_output_accuracy_with_baseline(similar_taste_dict, baseline_list):
+	'''
+	Calculates and outputs the accuracy score with a baseline.
+	'''
 	with open(accuracy_with_baseline_output_path, 'w') as outfile:
 		fieldnames = ['baseline', 'accuracy']
 		writer = csv.DictWriter(outfile, fieldnames = fieldnames)
