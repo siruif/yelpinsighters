@@ -10,6 +10,9 @@ from similar_user import similar_taste_dict_with_category
 
 
 def read(filename, file_format, json_obj_top_level_id = None):
+	'''
+	Reads in the path to a file and converts it to a dataframe; file can currently be a csv or json object
+	'''
 
 	df = []
 	if file_format == 'csv':
@@ -33,6 +36,10 @@ def read(filename, file_format, json_obj_top_level_id = None):
 
 
 def busn_category_pair(filename):
+	'''
+	Takes in a file name, turns it into a dataframe and generates pairs of businesses who share the same categories, 
+	returns the dataframe, Returns a dictionary of the count of businesses per category, and a dictionary of the counts of other businesses
+	'''
 
 	df = read(filename, "json objects", "business_id")
 
@@ -55,12 +62,10 @@ def busn_category_pair(filename):
 
 
 def generate_similar_pairs(dictname, outfilename, pairname, similarity_id):
-	# business_dict records for each business, all the pairs who have gone to it
-	# key is business_id, value is a list of tuples in the form of (user1,user2)
-	
-	#with open(outfilename, 'w', newline = '') as outfile:
-	#	w = csv.writer(outfile, delimiter = ',')
-	#	w.writerow([pairname, similarity_id])
+	'''
+	Generate similar pairs of users based on whether they went to the business with the same category
+	Key is business_id, value is a list of tuples in the form of (user1,user2)
+	'''
 
 	pairs_busn_cat = {}
 
@@ -74,10 +79,17 @@ def generate_similar_pairs(dictname, outfilename, pairname, similarity_id):
 
 
 def accuracy_with_cat_baseline(pairs_busn_cat, dict_cat, dict_user_pairs):
-	# pairs_busn_cat - csv file name that holds the info on pairs of businesses that share a given category, comes in the form of [(busn1, busn2), category]
-	# dict_cat - dictionary of categories where key is category, and value is a set of all the businesses that shared that category
-	# dict_user_pairs - dictionary of where key is a pair of user, and value is a tuple of list of busineses that the pair has gone to, and a list of tuples of businesses that the pairs have rated the same
-	# {(u1,u2): {'busn_list':[b1, b2, b3, b4], 'similar_rate_busn_pair': [(b1,b2), (b2, b3), (b1,b3)]}, (u2,u3):{}...}
+	'''
+	Calculates the accuracy of recommendations based of off as similar users who have gone to the same restaurants in the same categories
+	Inputs are:
+	pairs_busn_cat - csv file name that holds the info on pairs of businesses that share a given category, comes in the form of [(busn1, busn2), category]
+	dict_cat - dictionary of categories where key is category, and value is a set of all the businesses that shared that category
+	dict_user_pairs - dictionary of where key is a pair of user, and value is a tuple of list of busineses that the pair has gone to, and a list of tuples of businesses that the pairs have rated the same
+	{(u1,u2): {'busn_list':[b1, b2, b3, b4], 
+	similar_rate_busn_pair': [(b1,b2), (b2, b3), (b1,b3)]}, (u2,u3):{}...}
+	Outputs are: an overall calculation of accuracy.
+	** Please note we didn't finish or perfect this due ot AWS unavailability
+	'''
 
 	accuracy = []
 	sim_rate = set()
@@ -115,8 +127,8 @@ def accuracy_with_cat_baseline(pairs_busn_cat, dict_cat, dict_user_pairs):
 
 
 if __name__ == '__main__':
-	print("initializing...")
 	start_time = time.time()
+	print("initializing at {}".format(start_time))
 	cat_count_dict, df, cat_busn_dict = busn_category_pair("datafiles/yelp_academic_dataset_business.json")
 	end_time = time.time()
 	secs = end_time - start_time
